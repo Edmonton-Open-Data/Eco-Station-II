@@ -12,33 +12,51 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.min.css">
+
+    <style>
+        /* width for map and charts */
+        #map-plot,
+        .svg-container {
+            width: 100%;
+        }
+
+        /* map height */
+        #map-plot{
+            padding-bottom: 71.2%;
+        }
+
+    </style>
     <title>Document</title>
 </head>
 <body class="keen-dashboard" style="padding-top: 0.5em;">
     <div class="container-fluid">
         <div class="row">
 
-            <div class="col-lg-4 col-md-4">
+            <div class="col-lg-8 col-md-8">
                 <div class="row">
 
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
-                            <div class="chart-title">
-                                Bar Graph
-                            </div>
                             <div class="chart-stage">
-                                <img data-src="holder.js/100%x41%/white">
+                                <!-- <img data-src="holder.js/100%x41%/white"> -->
+                                <div id="bar-chart" class="svg-container">
+                                    <div class="chart-title">
+                                        Monthly Trend
+                                    </div>
+                                </div>
                             </div>
                         </div>  
                     </div>
 
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
-                            <div class="chart-title">
-                                Line Graph
-                            </div>
                             <div class="chart-stage">
-                                <img data-src="holder.js/100%x41%/white">
+                                <!-- <img data-src="holder.js/100%x41%/white"> -->
+                                <div id="line-chart" class="svg-container">
+                                    <div class="chart-title">
+                                        Yearly Trend
+                                    </div>
+                                </div>
                             </div>
                         </div>  
                     </div>
@@ -46,27 +64,31 @@
                 </div>
             </div>
 
+
             <div class="col-lg-4 col-md-4">
                 <div class="row">
 
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
-                            <div class="chart-title">
-                                Total Stats
-                            </div>
                             <div class="chart-stage">
-                                <img data-src="holder.js/100%x41%/white">
+                                <!-- <img data-src="holder.js/100%x41%/white"> -->
+                                <div id="pie-chart" class="svg-container">
+                                    <div class="chart-title">
+                                        Yearly Percent & Stats
+                                    </div>
+                                </div>
                             </div>
                         </div>  
                     </div>
 
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
-                            <div class="chart-title">
-                                Pie Charts
-                            </div>
                             <div class="chart-stage">
-                                <img data-src="holder.js/100%x41%/white">
+                                <!-- <img data-src="holder.js/100%x41%/white"> -->
+                                <div class="chart-title">
+                                    Locations of Eco Stations
+                                </div> 
+                                <div id="map-plot"></div>
                             </div>
                         </div>  
                     </div>
@@ -74,31 +96,154 @@
                 </div>
             </div>
 
-            <div class="col-lg-4 col-md-4">
-                <div class="row">
-
-                    <div class="col-lg-12 col-md-12">
-                        <div class="chart-wrapper">
-                            <div class="chart-title">
-                                Locations
-                            </div>
-                            <div class="chart-stage">
-                                <img data-src="holder.js/100%x89%/white">
-                            </div>
-                        </div>  
-                    </div>
-            </div>
-
         </div>
 
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/holder/2.3.2/holder.min.js" type="text/javascript"></script>
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/holder/2.3.2/holder.min.js" type="text/javascript"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.min.js"></script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.min.js"></script>
     <script>
-        Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
+        // Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
+        var log  = console.log;
+
+        d3.json("https://cdn.rawgit.com/Edmonton-Open-Data/Edmonton-Eco-Stations/master/data/Eco_Station_Monthly_Users.json",
+            function(error, data){
+                if(error) throw error;
+
+                // filtered out the 2017 entries the months are not complete we are still in the year of 2017
+                // then overwrite entries with the filtered entries
+                data = data.filter(function(d) { return d["year"] != "2017"; });
+
+                /*of_users, month, year, and id to number objects
+                    datetime to a date object
+                    converting strings to objects mentioned above
+                */
+                data.forEach(function(d) {
+                    d.of_users = +d.of_users;
+                    d.id = +d.id;
+                    d.datetime = new Date(d.datetime);
+                    d.month = d.datetime.getMonth();
+                    d.year = d.datetime.getFullYear();
+                });
+                // log(data);
+
+                // cross filter instance
+                var facts = crossfilter(data);
+
+                //chart variables
+                var monthNames        = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+                var sumOfUsersReduced = data
+                                            .map(function(d) { return d.of_users; })
+                                            .reduce(function(sum, value) { return sum + value; }, 0);//reduced sum of all users
+                
+                //dimensions
+                var yearDimension  = facts.dimension(function(d) { return d.year; });
+                var monthDimension = facts.dimension(function(d) { return monthNames[d.month]; });
+
+                //groups
+                var yearGroupPie  = yearDimension.group().reduceSum(function(d) {return (d.of_users/sumOfUsersReduced) * 100; });
+                var groupByUsers  = function(d) { return d.of_users; };
+                var yearGroupLine = yearDimension.group().reduceSum(groupByUsers);
+                var monthGroup    = monthDimension.group().reduceSum(groupByUsers);
+                var sumOfAllUsers = facts.groupAll().reduceSum(groupByUsers);
+                // var yearsArray = yearGroupLine.all();
+                // log(d3.extent(yearsArray, function(d) { return d.key; }));
+
+                //charts
+                    barChart  = dc.barChart("#bar-chart");
+                    lineChart = dc.lineChart("#line-chart");
+                    pieChart  = dc.pieChart("#pie-chart");
+                var charts    = [barChart, lineChart];
+
+                //Define values to be used by chart(s)
+                var chartHeightScale = 0.334;
+                var margin           = {
+                        top:    Math.round(barChart.height() * 0.02, 1),
+                        right:  Math.round(barChart.width() * 0.02, 1),
+                        bottom: Math.round(barChart.height() * 0.12, 1),
+                        left:   Math.round(barChart.width() * 0.051, 1)
+                    };
+                var pieXscale      = 1.5;
+                var pieRscale      = chartHeightScale * 0.9;
+                var pieInnerRscale = pieRscale * 0.6;
+
+                charts.forEach(function(chart, index){
+                    chart
+                         .height(setHeight(chart))
+                         .useViewBoxResizing(true)
+                         .margins(margin);        
+                });
+
+                barChart
+                        .dimension(monthDimension)
+                        .group(monthGroup)
+                        .barPadding(0.08)
+                        .clipPadding(30)
+                        .title(function(d) { return d.key +': '+ d.value.toLocaleString(); })
+                        .x(d3.scale.ordinal().domain(monthNames))
+                        .xUnits(dc.units.ordinal)
+                        .elasticY(true);
+                barChart.render();
+
+                lineChart
+                         .dimension(yearDimension)
+                         .group(yearGroupLine)
+                         .elasticY(true)
+                         .brushOn(false)
+                         .x(d3.scale.linear().domain(d3.extent(yearGroupLine.all(), function(d) { return d.key; })))
+                         .renderArea(true)
+                         .xAxis()
+                         .tickFormat(d3.format(".0f"))
+                         .ticks(6);
+                lineChart.render();
+
+                pieChart.dimension(yearDimension)
+                        .group(yearGroupPie)
+                        .height(setHeight(pieChart) * 2.1186)
+                        .useViewBoxResizing(true)
+                        .radius(pieChart.width() * pieRscale)
+                        .innerRadius(pieChart.width() * pieInnerRscale)
+                        .cx(pieChart.width() / pieXscale)
+                        // .cy(Math.round(pieChartHeight * 0.5, 1))
+                        .label(function(d) { return d.value.toFixed(2) + '%'; })
+                        .title(function(d) { return d.key+': '+ (Math.round((d.value/100) * sumOfUsersReduced, 1)).toLocaleString(); })
+                        .legend(dc.legend())
+                        //https://github.com/dc-js/dc.js/blob/master/web/examples/pie-external-labels.html
+                        //solution for adding dynamic data to legend
+                        .on("pretransition.legend", function(chart) { 
+                            chart.selectAll(".dc-legend-item text")      
+                            .text('')
+                            .append("tspan")
+                            .text(function(d) { return d.name; })
+                            .append("tspan")
+                            .attr('x', Math.round(pieChart.width() * 0.35, 1))
+                            .attr("text-anchor", "end")
+                            .text(function(d) { return Math.round((d.data/100) * sumOfUsersReduced, 1).toLocaleString(); });
+                        });
+                pieChart.render();
+
+                var map = L.map("map-plot",{
+                    zoom: 10
+                });
+
+                var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                });
+                OpenStreetMap.addTo(map);
+                map.setView([53.55589, -113.506643]);
+
+
+
+                function setHeight(chart) { 
+                    return chart.width() * chartHeightScale; 
+                }
+
+            }
+        );
+
     </script>
 </body>
 </html>
