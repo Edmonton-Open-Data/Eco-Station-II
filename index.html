@@ -3,26 +3,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
+    <!-- Dashboard Dependecies -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.rawgit.com/keen/dashboards/gh-pages/assets/css/keen-dashboards.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/keen-js/4.3.0/keen.min.js"></script>
-
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/leaflet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.min.css">
-
     <style>
+
         /* width for map and charts */
         #map-plot,
         .svg-container {
             width: 100%;
         }
 
-        /* map height */
-        #map-plot{
-            padding-bottom: 79.2%;
+        
+        #map-plot {
+            padding-bottom: 76.75%;
+        }
+
+        /* to make layout nice for 1920px width Screens and up */
+        @media (min-width: 1920px) {
+            #map-plot {
+                padding-bottom: 71.8%;
+            }
+            #pie-chart {
+                height: 40.1%;
+            }
+        }
+
+        /* increase font size for the x & y axis labels*/
+        .dc-chart .axis text {
+            font-size: 0.8em;
+        }
+
+        /* rotate the map div to use map space efficiently */
+        .mybutton {
+            padding: 0 0 0em 1em;
+            border-radius: 5px;
+            /* https://stackoverflow.com/questions/6652476/set-rotation-point-in-css3 
+               to place the custom leaflet p tag as desired
+            */
+            -webkit-transform: rotate(90deg);
+            -webkit-transform-origin: 0% 59%;
+            -moz-transform: rotate(90deg);
+            -moz-transform-origin: 0% 59%;
+            transform: rotate(90deg);
+            transform-origin: 0% 59%;
+        }
+
+        .button-info {
+            padding: 0.75em;
+            background-color: rgba(255, 255, 255, 0.8); 
         }
 
     </style>
@@ -31,56 +66,81 @@
 <body class="keen-dashboard" style="padding-top: 0.5em;">
     <div class="container-fluid">
         <div class="row">
-
+            <!-- column 1 for row -->
             <div class="col-lg-8 col-md-8">
                 <div class="row">
-
+                    <!-- Bar Chart -->
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
                             <div class="chart-stage">
                                 <!-- <img data-src="holder.js/100%x41%/white"> -->
                                 <div id="bar-chart" class="svg-container">
                                     <div class="chart-title">
-                                        Monthly Trend
+                                        <span class="reset" style="display: none"> 
+                                            Month(s): <span class="filter"></span>
+                                        </span>
+                                        <span>
+                                            <a class="reset" style="display:none" href="javascript:barChart.filterAll(); dc.redrawAll();">
+                                                Reset | 
+                                            </a>
+                                        </span>  
+                                        <span>
+                                            <a class="reset" style="display:none" href="javascript:dc.filterAll(); dc.redrawAll();">
+                                                <strong>Reset All</strong>
+                                            </a>
+                                        </span> 
                                     </div>
                                 </div>
                             </div>
+                            <div class="chart-notes">
+                                Monthly Trend
+                            </div>
                         </div>  
                     </div>
-
+                    <!-- Line Chart -->
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
                             <div class="chart-stage">
                                 <!-- <img data-src="holder.js/100%x41%/white"> -->
                                 <div id="line-chart" class="svg-container">
-                                    <div class="chart-title">
-                                        Yearly Trend
-                                    </div>
+                                    <div class="chart-title"></div>
                                 </div>
+                            </div>
+                            <div class="chart-notes">
+                                Yearly Trend
                             </div>
                         </div>  
                     </div>
-
                 </div>
             </div>
 
-
+            <!-- column 2 for row -->
             <div class="col-lg-4 col-md-4">
                 <div class="row">
-
+                    <!-- Pie Chart -->
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
                             <div class="chart-stage">
                                 <!-- <img data-src="holder.js/100%x41%/white"> -->
                                 <div id="pie-chart" class="svg-container">
                                     <div class="chart-title">
-                                        Yearly Percent & Stats
+                                        <span class="reset" style="display: none"> 
+                                            Year(s): <span class="filter"></span>
+                                        </span>
+                                        <span>
+                                            <a class="reset" style="display:none" href="javascript:pieChart.filterAll(); dc.redrawAll();">
+                                                Reset
+                                            </a>
+                                        </span>  
                                     </div>
                                 </div>
                             </div>
+                            <div class="chart-notes">
+                                Yearly Percentage and Total(s)
+                            </div>
                         </div>  
                     </div>
-
+                    <!-- Map -->
                     <div class="col-lg-12 col-md-12">
                         <div class="chart-wrapper">
                             <div class="chart-stage">
@@ -89,7 +149,6 @@
                             </div>
                         </div>  
                     </div>
-                    
                 </div>
             </div>
 
@@ -101,142 +160,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.17/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.9/dc.min.js"></script>
-    <script>
-        // Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
-        var log  = console.log;
-
-        d3.json("https://cdn.rawgit.com/Edmonton-Open-Data/Edmonton-Eco-Stations/master/data/Eco_Station_Monthly_Users.json",
-            function(error, data){
-                if(error) throw error;
-
-                // filtered out the 2017 entries the months are not complete we are still in the year of 2017
-                // then overwrite entries with the filtered entries
-                data = data.filter(function(d) { return d["year"] != "2017"; });
-
-                /*of_users, month, year, and id to number objects
-                    datetime to a date object
-                    converting strings to objects mentioned above
-                */
-                data.forEach(function(d) {
-                    d.of_users = +d.of_users;
-                    d.id = +d.id;
-                    d.datetime = new Date(d.datetime);
-                    d.month = d.datetime.getMonth();
-                    d.year = d.datetime.getFullYear();
-                });
-                // log(data);
-
-                // cross filter instance
-                var facts = crossfilter(data);
-
-                //chart variables
-                var monthNames        = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-                var sumOfUsersReduced = data
-                                            .map(function(d) { return d.of_users; })
-                                            .reduce(function(sum, value) { return sum + value; }, 0);//reduced sum of all users
-                
-                //dimensions
-                var yearDimension  = facts.dimension(function(d) { return d.year; });
-                var monthDimension = facts.dimension(function(d) { return monthNames[d.month]; });
-
-                //groups
-                var yearGroupPie  = yearDimension.group().reduceSum(function(d) {return (d.of_users/sumOfUsersReduced) * 100; });
-                var groupByUsers  = function(d) { return d.of_users; };
-                var yearGroupLine = yearDimension.group().reduceSum(groupByUsers);
-                var monthGroup    = monthDimension.group().reduceSum(groupByUsers);
-                var sumOfAllUsers = facts.groupAll().reduceSum(groupByUsers);
-                // var yearsArray = yearGroupLine.all();
-                // log(d3.extent(yearsArray, function(d) { return d.key; }));
-
-                //charts
-                    barChart  = dc.barChart("#bar-chart");
-                    lineChart = dc.lineChart("#line-chart");
-                    pieChart  = dc.pieChart("#pie-chart");
-                var charts    = [barChart, lineChart];
-
-                //Define values to be used by chart(s)
-                var chartHeightScale = 0.334;
-                var margin           = {
-                        top:    Math.round(barChart.height() * 0.02, 1),
-                        right:  Math.round(barChart.width() * 0.02, 1),
-                        bottom: Math.round(barChart.height() * 0.12, 1),
-                        left:   Math.round(barChart.width() * 0.051, 1)
-                    };
-                var pieXscale      = 1.55;
-                var pieRscale      = 0.5;
-                var pieInnerRscale = pieRscale * 0.7;
-
-                charts.forEach(function(chart, index){
-                    chart
-                         .height(setHeight(chart))
-                         .useViewBoxResizing(true)
-                         .margins(margin);        
-                });
-
-                barChart
-                        .dimension(monthDimension)
-                        .group(monthGroup)
-                        .barPadding(0.08)
-                        .clipPadding(30)
-                        .title(function(d) { return d.key +': '+ d.value.toLocaleString(); })
-                        .x(d3.scale.ordinal().domain(monthNames))
-                        .xUnits(dc.units.ordinal)
-                        .elasticY(true);
-
-                lineChart
-                         .dimension(yearDimension)
-                         .group(yearGroupLine)
-                         .elasticY(true)
-                         .brushOn(false)
-                         .x(d3.scale.linear().domain(d3.extent(yearGroupLine.all(), function(d) { return d.key; })))
-                         .renderArea(true)
-                         .xAxis()
-                         .tickFormat(d3.format(".0f"))
-                         .ticks(6);
-
-                pieChart.dimension(yearDimension)
-                        .group(yearGroupPie)
-                        .height(barChart.height())
-                        .useViewBoxResizing(true)
-                        .radius(pieChart.height() * pieRscale)
-                        .innerRadius(pieChart.height() * pieInnerRscale)
-                        .cx(pieChart.width() / pieXscale)
-                        .label(function(d) { return d.value.toFixed(2) + '%'; })
-                        .title(function(d) { return d.key+': '+ (Math.round((d.value/100) * sumOfUsersReduced, 1)).toLocaleString(); })
-                        .legend(dc.legend())
-                        //https://github.com/dc-js/dc.js/blob/master/web/examples/pie-external-labels.html
-                        //solution for adding dynamic data to legend
-                        .on("pretransition.legend", function(chart) { 
-                            chart.selectAll(".dc-legend-item text")      
-                                 .text('')
-                                 .append("tspan")
-                                 .text(function(d) { return d.name; })
-                                 .append("tspan")
-                                 .attr('x', Math.round(pieChart.width() * 0.25, 1))
-                                 .attr("text-anchor", "end")
-                                 .text(function(d) { return Math.round((d.data/100) * sumOfUsersReduced, 1).toLocaleString(); });
-                        });
-                dc.renderAll();
-
-                var map = L.map("map-plot",{
-                    zoom: 10
-                });
-
-                var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                });
-                OpenStreetMap.addTo(map);
-                map.setView([53.55589, -113.506643]);
-
-
-                function setHeight(chart) { 
-                    return chart.width() * chartHeightScale; 
-                }
-
-            }
-        );
-
-    </script>
+    <script src="ecostation.js"></script>
 </body>
 </html>
