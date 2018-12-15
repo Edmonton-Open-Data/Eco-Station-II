@@ -2,7 +2,7 @@ function main() {
     // Holder.add_theme("white", { background:"#fff", foreground:"#a7a7a7", size:10 });
     var log  = console.log;
  
-    d3.json("https://cdn.rawgit.com/Edmonton-Open-Data/Edmonton-Eco-Stations/master/data/Eco_Station_Monthly_Users.json",
+    d3.json("https://raw.githubusercontent.com/Edmonton-Open-Data/Edmonton-Eco-Stations/master/data/Eco_Station_Monthly_Users.json",
         function(error, data) {
             if(error) throw error;
  
